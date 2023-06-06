@@ -5,6 +5,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
 import { authRouter, passwordRouter, verifyEmailRouter } from './routes/v1';
+import * as sql from './routes/v1/queries';
 import isAuth from './middleware/isAuth';
 import { errorHandler } from './middleware/errorHandler';
 import config from './config/config';
@@ -43,10 +44,15 @@ if (config.node_env === 'production') {
 }
 
 app.use('/api/v1/auth', authRouter);
-
 app.use('/api/v1', passwordRouter);
-
 app.use('/api/v1', verifyEmailRouter);
+
+app.use('/api/query/insertOne', sql.insertOne);
+app.use('/api/query/selectAll', sql.selectAll);
+app.use('/api/query/selectOne', sql.selectOne);
+app.use('/api/query/updateOne', sql.updateOne);
+app.use('/api/query/deleteOne', sql.deleteOne);
+app.use('/api/query/deleteAll', sql.deleteAll);
 
 app.get('/secret', isAuth, (_req, res) => {
   res.json({
