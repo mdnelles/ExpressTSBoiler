@@ -54,6 +54,8 @@ app.use('/api/query/updateOne', sql.updateOne);
 app.use('/api/query/deleteOne', sql.deleteOne);
 app.use('/api/query/deleteAll', sql.deleteAll);
 
+app.use('/api/query/initMaps', sql.initMaps);
+
 app.get('/secret', isAuth, (_req, res) => {
   res.json({
     message: 'You can see me'

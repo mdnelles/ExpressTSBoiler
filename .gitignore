@@ -6,4 +6,3 @@ yarn-error.log
 logs/
 coverage/
 data
-src/routes/db/config.ts

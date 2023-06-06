@@ -1,21 +1,22 @@
-import sqlite3 from 'sqlite3';
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import fs from 'fs-extra';
+//const env = require('dotenv').config().parsed;
 
 // Import the SQLite database instance from ./config
-import { db, path } from '../db/config';
+import { db } from '../db/config';
 
 // Set up Sequelize with the SQLite database instance
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path // Replace with the actual path to your SQLite database file
-});
+// const sequelize = new Sequelize({
+//   dialect: 'sqlite',
+//   storage: env.DBPATH // Replace with the actual path to your SQLite database file
+// });
 
 // Define a function to create Sequelize models based on table columns
-async function createModels() {
+export async function createModels(dbname: any, res: any) {
   // Retrieve all table names from the database
   const tableNames = await new Promise<string[]>((resolve, reject) => {
     db.all("SELECT name FROM sqlite_master WHERE type='table'", (err, rows) => {
       if (err) {
+        res.json({ msg: `failed (1) on ${dbname}`, status: 500, err });
         reject(err);
       } else {
         const names = rows.map((row: any) => row.name);
@@ -23,13 +24,14 @@ async function createModels() {
       }
     });
   });
-
+  console.log(tableNames);
   // Iterate through each table name
   for (const tableName of tableNames) {
     // Retrieve column information for the current table
     const columns = await new Promise<any[]>((resolve, reject) => {
       db.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
         if (err) {
+          res.json({ msg: `failed (2) on ${dbname}`, status: 500, err });
           reject(err);
         } else {
           resolve(rows);
@@ -37,54 +39,60 @@ async function createModels() {
       });
     });
 
+    let upper = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+
+    let modelCode = `import Sequelize from "sequelize";
+   import { dbconn } from '../config';
+   
+   export const ${upper} = dbconn.sequelize.define(
+    "${tableName}",
+    {
+      `;
+
     // Define the Sequelize model based on the column information
-    const modelAttributes: { [key: string]: any } = {};
+
+    const pkTrue = '\n\t\t\t\tprimaryKey:true,';
+    const aiTrue = '\n\t\t\t\tautoIncrement: true,';
 
     for (const column of columns) {
       const columnName = column.name;
       const dataType = column.type;
+      const isPrimaryKey = column.pk === 1;
+      const autoIncrement = column.pk === 1 && column.type === 'INTEGER';
 
       // Map database data types to Sequelize data types
-      let sequelizeDataType: any;
+      let typ: any;
 
       if (dataType.includes('varchar')) {
-        sequelizeDataType = DataTypes.STRING;
+        typ = 'STRING';
       } else if (dataType.includes('int')) {
-        sequelizeDataType = DataTypes.INTEGER;
+        typ = 'INTEGER';
       } else if (dataType.includes('float')) {
-        sequelizeDataType = DataTypes.FLOAT;
+        typ = 'FLOAT';
       } else if (dataType.includes('date')) {
-        sequelizeDataType = DataTypes.DATEONLY;
+        typ = 'DATEONLY';
       } else if (dataType.includes('boolean')) {
-        sequelizeDataType = DataTypes.BOOLEAN;
+        typ = 'BOOLEAN';
       } else {
-        sequelizeDataType = DataTypes.STRING;
+        typ = 'STRING';
       }
 
-      modelAttributes[columnName] = sequelizeDataType;
+      modelCode += `    ${columnName}: {
+        type:  Sequelize.${typ}, ${isPrimaryKey ? pkTrue : ''} ${
+        autoIncrement ? aiTrue : ''
+      }
+        },
+      `;
     }
 
-    // Create the Sequelize model for the current table
-    class DynamicModel extends Model {}
-    DynamicModel.init(modelAttributes, {
-      sequelize,
-      modelName: tableName,
-      tableName,
-      timestamps: false
-    });
+    modelCode += ` }); `;
 
-    // Sync the model with the database (optional)
-    await DynamicModel.sync();
+    // Define the file path to write the model file
+    const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
+
+    // Write the model code to the file
+    fs.writeFileSync(filePath, modelCode);
 
     console.log(`Created Sequelize model for table: ${tableName}`);
   }
 }
-
-// Run the createModels function to create Sequelize models
-createModels()
-  .then(() => {
-    console.log('Sequelize models created successfully!');
-  })
-  .catch((error) => {
-    console.error('Error creating Sequelize models:', error);
-  });
