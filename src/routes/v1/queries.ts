@@ -1,4 +1,5 @@
 import { db } from '../db/config';
+import { createModels } from '../init/doModelsSQLite';
 
 export const insertOne = (req: any, res: any) => {
   console.log(req.body);
@@ -84,4 +85,16 @@ export const deleteAll = (req: any, res: any) => {
       res.json({ msg: 'success', err: false, status: 200, rows });
     }
   });
+};
+
+export const initMaps = (req: any, res: any) => {
+  try {
+    const { dbname = '' } = req.body;
+    (async () => {
+      const tmp = await createModels(dbname, res);
+      console.log(tmp);
+    })();
+  } catch (error) {
+    res.json({ msg: 'error occured', err: true, status: 500, error });
+  }
 };

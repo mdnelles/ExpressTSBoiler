@@ -21,7 +21,8 @@ async function createModels() {
 
   // Iterate through each table name
   for (const tableNameObj of tableNames) {
-    const tableName = tableNameObj.table_name;
+    let tmp: any = tableNameObj;
+    const tableName: any = tmp.table_name;
 
     // Retrieve column information for the current table
     const columns = await sequelize.query(
@@ -33,8 +34,9 @@ async function createModels() {
     const modelAttributes: { [key: string]: any } = {};
 
     for (const column of columns) {
-      const columnName = column.column_name;
-      const dataType = column.data_type;
+      let tmp: any = column;
+      const columnName = tmp.column_name;
+      const dataType = tmp.data_type;
 
       // Map database data types to Sequelize data types
       let sequelizeDataType: any;
