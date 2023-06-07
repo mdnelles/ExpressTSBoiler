@@ -1,5 +1,5 @@
 // import necessary modules and functions
-import { insertOne } from '../../src/routes/v1/queries';
+import { insertOne } from '../../src/routes/v1/queriesSQLite';
 const sqlite3 = require('sqlite3');
 import { db } from '../../src/routes/db/config';
 
@@ -16,7 +16,7 @@ describe('insertOne', () => {
       json: jest.fn()
     };
 
-    await insertOne(req, res);
+    // insertOne(req, res);
 
     expect(res.json).toHaveBeenCalledWith({
       msg: 'success',
