@@ -4,12 +4,6 @@ import fs from 'fs-extra';
 // Import the SQLite database instance from ./config
 import { db } from '../db/config';
 
-// Set up Sequelize with the SQLite database instance
-// const sequelize = new Sequelize({
-//   dialect: 'sqlite',
-//   storage: env.DBPATH // Replace with the actual path to your SQLite database file
-// });
-
 // Define a function to create Sequelize models based on table columns
 export async function createModels(dbname: any, res: any) {
   // Retrieve all table names from the database

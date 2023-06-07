@@ -55,6 +55,7 @@ app.use('/api/query/deleteOne', sql.deleteOne);
 app.use('/api/query/deleteAll', sql.deleteAll);
 
 app.use('/api/query/initMaps', sql.initMaps);
+app.use('/api/query/populate', sql.insertData);
 
 app.get('/secret', isAuth, (_req, res) => {
   res.json({
