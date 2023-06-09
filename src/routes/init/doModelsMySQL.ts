@@ -8,82 +8,86 @@ import { db } from '../db/config';
 // Define a function to create Sequelize models based on table columns
 export async function createModelsMySQL(dbname: any, res: any) {
   // Retrieve all table names from the database
-  const tableNames = await db.sequelize.query(
-    `SELECT name FROM sqlite_master WHERE type='table' `,
-    { type: Sequelize.QueryTypes.SELECT }
-  );
-  console.log(tableNames);
-  // Iterate through each table name
-  for (const tableName of tableNames) {
-    // Retrieve column information for the current table
-    const columns = await new Promise<any[]>((resolve, reject) => {
-      db.sequelize.query(
-        `PRAGMA table_info(${tableName})`,
-        (err: any, rows: any) => {
-          if (err) {
-            res.json({ msg: `failed (2) on ${dbname}`, status: 500, err });
-            reject(err);
-          } else {
-            resolve(rows);
-          }
-        }
-      );
+  try {
+    // Retrieve all table names from the database
+    const tableNames = await db.sequelize.query(`SHOW TABLES FROM ${dbname} `, {
+      type: Sequelize.QueryTypes.SHOWTABLES
     });
 
-    let upper = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+    console.log(tableNames);
 
-    let modelCode = `import Sequelize from "sequelize";
-   import { dbconn } from '../config';
+    // Iterate through each table name
+    tableNames.map(async (tableName: any) => {
+      // Retrieve column information for the current table
+      const columns = await db.sequelize.query(
+        `SHOW COLUMNS FROM ${tableName}`
+      );
+      console.log(columns[0]);
+      const upper = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+
+      let modelCode = `import Sequelize from "sequelize";
+   import { db } from '../config';
    
-   export const ${upper} = dbconn.sequelize.define(
+   export const ${upper} = db.sequelize.define(
     "${tableName}",
     {
       `;
 
-    // Define the Sequelize model based on the column information
+      // Define the Sequelize model based on the column information
 
-    const pkTrue = '\n\t\t\t\tprimaryKey:true,';
-    const aiTrue = '\n\t\t\t\tautoIncrement: true,';
+      const pkTrue = '\n\t\t\t\t\tprimaryKey: true,';
+      const aiTrue = '\n\t\t\t\t\tautoIncrement: true,';
 
-    for (const column of columns) {
-      const columnName = column.name;
-      const dataType = column.type;
-      const isPrimaryKey = column.pk === 1;
-      const autoIncrement = column.pk === 1 && column.type === 'INTEGER';
+      for (const column of columns[0]) {
+        const columnName = column.Field;
+        const dataType = column.Type;
+        const isPrimaryKey = column.Key === 'PRI';
+        const autoIncrement =
+          column.Extra === 'auto_increment' && column.Key === 'PRI';
 
-      // Map database data types to Sequelize data types
-      let typ: any;
+        // Map database data types to Sequelize data types
+        let typ: any;
 
-      if (dataType.includes('varchar')) {
-        typ = 'STRING';
-      } else if (dataType.includes('int')) {
-        typ = 'INTEGER';
-      } else if (dataType.includes('float')) {
-        typ = 'FLOAT';
-      } else if (dataType.includes('date')) {
-        typ = 'DATEONLY';
-      } else if (dataType.includes('boolean')) {
-        typ = 'BOOLEAN';
-      } else {
-        typ = 'STRING';
-      }
-
-      modelCode += `    ${columnName}: {
-        type:  Sequelize.${typ}, ${isPrimaryKey ? pkTrue : ''} ${
-        autoIncrement ? aiTrue : ''
-      }
+        if (dataType.includes('varchar')) {
+          typ = 'STRING';
+        } else if (dataType.includes('int')) {
+          typ = 'INTEGER';
+        } else if (dataType.includes('float')) {
+          typ = 'FLOAT';
+        } else if (dataType.includes('date')) {
+          typ = 'DATEONLY';
+        } else if (dataType.includes('boolean')) {
+          typ = 'BOOLEAN';
+        } else {
+          typ = 'STRING';
+        }
+        console.log('typ: ' + typ);
+        modelCode += `  ${columnName}: {
+          type: Sequelize.${typ}, ${isPrimaryKey ? pkTrue : ''} ${
+          autoIncrement ? aiTrue : ''
+        }
         },
       `;
-    }
+      }
 
-    modelCode += ` }); `;
+      modelCode += ` }); `;
 
-    // Define the file path to write the model file
-    const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
+      // Define the file path to write the model file
+      const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
 
-    // Write the model code to the file
-    fs.writeFileSync(filePath, modelCode);
+      // Write the model code to the file
+      console.log('**' + modelCode);
+      fs.writeFileSync(filePath, modelCode);
 
-    console.log(`Created Sequelize model for table: ${tableName}`);
+      console.log(`Created Sequelize model for table: ${tableName}`);
+      res.json({
+        msg: `Created Sequelize model for table: ${tableName}`,
+        err: false,
+        status: 200
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ msg: 'Error', err: true, error, status: 500 });
   }
 }

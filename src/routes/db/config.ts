@@ -4,22 +4,25 @@ const env = require('dotenv').config().parsed;
 const host = env.MYSQLHOST;
 
 export const db: any = {};
-const sequelize = new Sequelize(env.MYSQLDB, env.MYSQLUSER, env.MYSQLPASS, {
-  port: env.MYSQLPORT,
-  host,
-  dialect: 'mysql',
-  //logging: console.log,
+try {
+  const sequelize = new Sequelize(env.MYSQLDB, env.MYSQLUSER, env.MYSQLPASS, {
+    port: env.MYSQLPORT,
+    host,
+    dialect: 'mysql',
+    //logging: console.log,
 
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  }
-});
-
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  });
+  db.sequelize = sequelize;
+  db.Sequelize = Sequelize;
+} catch (error) {
+  console.log(error);
+}
 
 // import sqlite3 from 'sqlite3';
 
