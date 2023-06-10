@@ -1,5 +1,6 @@
 import { db } from '../db/config';
 import Sequelize from 'sequelize';
+import util from 'util';
 import express from 'express';
 import { createModelsMySQL } from '../init/doModelsMySQL';
 import { generateDummyData } from '../../utils/generateDummy';
@@ -150,14 +151,17 @@ export const insertData = async (
     tableNames.map(async (tableName: any) => {
       // Retrieve column information for the current table
       const columns = await db.sequelize.query(
-        `SHOW COLUMNS FROM ${tableName}`
+        `SHOW COLUMNS FROM ${dbname}.${tableName}`
       );
-      console.log(columns);
 
       // Generate dummy data based on data types and insert 5 items
       const dummyData = generateDummyData(columns[0]);
-      console.log(dummyData);
-      await db.sequelizemodels[tableName].bulkCreate(dummyData);
+      const objString = util.inspect(dummyData);
+
+      console.log(objString);
+      await db.sequelizemodels[tableName].bulkCreate(dummyData, {
+        schema: dbname
+      });
     });
     res.json({ msg: 'success', err: false, status: 200 });
   } catch (error) {
