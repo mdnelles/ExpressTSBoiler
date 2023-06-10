@@ -2,28 +2,36 @@
 export const generateDummyData = (fields: any) => {
   const dummyItem: any = {};
   fields.forEach((field: any) => {
-    if (field !== 'ID') {
+    if (field.Field === 'ID') {
+      dummyItem.ID = '';
+    } else {
       const dataType = field.Type;
+      //console.log(tableName + '.' + dataType + ' ' + field.Field);
 
       // Add logic to generate dummy data based on different data types
       //switch (dataType) {
       switch (true) {
-        case dataType.includes('string'):
-          dummyItem[field] = generateRandomString(10);
+        case dataType.includes('varchar'):
+          dummyItem[field.Field] = generateRandomString(10);
           break;
-        case dataType.includes('integer'):
-          dummyItem[field] = Math.floor(Math.random() * 100);
+        case dataType.includes('int'):
+          dummyItem[field.Field] = Math.floor(Math.random() * 100);
           break;
         case dataType.includes('float'):
-          dummyItem[field] = Math.floor(Math.random() * 100);
+          dummyItem[field.Field] = Math.floor(Math.random() * 100);
           break;
         case dataType.includes('dateonly'):
-          dummyItem[field] = new Date();
+          dummyItem[field.Field] = new Date();
+          break;
+        case dataType.includes('datetime'):
+          dummyItem[field.Field] = new Date();
           break;
         case dataType.includes('boolean'):
-          dummyItem[field] = true;
+          dummyItem[field.Field] = true;
           break;
-        // Add more cases for other data types as needed
+        default:
+          dummyItem[field.Field] = 'default';
+          break;
       }
     }
   });
