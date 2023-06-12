@@ -19,6 +19,7 @@ try {
     }
   });
   db.sequelize = sequelize;
+  db.sequelizemodels = {};
   db.Sequelize = Sequelize;
 } catch (error) {
   console.log(error);
