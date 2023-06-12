@@ -1,5 +1,7 @@
 import Sequelize from 'sequelize';
 import { db } from '../config';
+import { EmployeeType } from './EmployeeType';
+import { Shop } from './Shop';
 
 export const Employee = db.sequelize.define('Employee', {
   ID: {
@@ -29,3 +31,21 @@ export const Employee = db.sequelize.define('Employee', {
     type: Sequelize.INTEGER
   }
 });
+
+Employee.belongsTo(EmployeeType, {
+  foreignKey: 'EmployeeType'
+});
+
+Employee.belongsTo(Shop, {
+  foreignKey: 'Shop'
+});
+
+// EmployeeType.hasMany(Employee, {
+//   foreignKey: 'employeeType',
+// });
+
+// const employees = await Employee.findAll({
+//   include: {
+//     model: EmployeeType,
+//   },
+// });

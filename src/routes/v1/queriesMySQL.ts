@@ -1,9 +1,8 @@
 import { db } from '../db/config';
 import Sequelize from 'sequelize';
-import util from 'util';
 import express from 'express';
 import { createModelsMySQL } from '../init/doModelsMySQL';
-import { generateDummyData } from '../../utils/generateDummy';
+import { generateDummyDataString } from '../../utils/generateDummy';
 
 export const insertOne = async (
   req: express.Request,
@@ -155,14 +154,12 @@ export const insertData = async (
       );
 
       // Generate dummy data based on data types and insert 5 items
-      const dummyData = generateDummyData(columns[0]);
-      const objString = util.inspect(dummyData);
-
-      console.log(objString);
-      await db.sequelizemodels[tableName].bulkCreate(dummyData, {
-        schema: dbname
-      });
+      const obj = generateDummyDataString(columns[0]);
+      await db.sequelize.query(
+        `INSERT INTO ${tableName} (${obj.cols}) VALUES (${obj.vals}); `
+      );
     });
+
     res.json({ msg: 'success', err: false, status: 200 });
   } catch (error) {
     res.json({ msg: 'error occured', err: true, status: 500, error });
