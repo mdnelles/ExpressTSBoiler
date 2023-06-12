@@ -14,15 +14,12 @@ export async function createModelsMySQL(dbname: any, res: any) {
       type: Sequelize.QueryTypes.SHOWTABLES
     });
 
-    console.log(tableNames);
-
     // Iterate through each table name
     tableNames.map(async (tableName: any) => {
       // Retrieve column information for the current table
       const columns = await db.sequelize.query(
         `SHOW COLUMNS FROM ${tableName}`
       );
-      console.log(columns[0]);
       const upper = tableName.charAt(0).toUpperCase() + tableName.slice(1);
 
       let modelCode = `import Sequelize from "sequelize";
@@ -61,7 +58,7 @@ export async function createModelsMySQL(dbname: any, res: any) {
         } else {
           typ = 'STRING';
         }
-        console.log('typ: ' + typ);
+
         modelCode += `  ${columnName}: {
           type: Sequelize.${typ}, ${isPrimaryKey ? pkTrue : ''} ${
           autoIncrement ? aiTrue : ''
@@ -76,15 +73,14 @@ export async function createModelsMySQL(dbname: any, res: any) {
       const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
 
       // Write the model code to the file
-      console.log('**' + modelCode);
       fs.writeFileSync(filePath, modelCode);
 
       console.log(`Created Sequelize model for table: ${tableName}`);
-      res.json({
-        msg: `Created Sequelize model for table: ${tableName}`,
-        err: false,
-        status: 200
-      });
+      // res.json({
+      //   msg: `Created Sequelize model for table: ${tableName}`,
+      //   err: false,
+      //   status: 200
+      // });
     });
   } catch (error) {
     console.log(error);
