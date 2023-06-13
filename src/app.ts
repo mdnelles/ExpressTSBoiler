@@ -56,6 +56,7 @@ app.use('/api/query/selecFields', mysql.selectFields);
 app.use('/api/query/updateOne', mysql.updateOne);
 app.use('/api/query/deleteOne', mysql.deleteOne);
 app.use('/api/query/deleteAll', mysql.deleteAll);
+app.use('/api/query/createTableByData', mysql.createTableByData);
 
 // File CRUD
 app.use('/api/query/insert', validHeader, file.insertOne);
@@ -63,7 +64,6 @@ app.use('/api/query/read', file.selectAll);
 app.use('/api/query/deleteOne', file.deleteOne);
 app.use('/api/query/updateOne', file.updateOne);
 
-// app.use('/api/query/initMapsSQLite', sql.initMapsSQLite);
 app.use('/api/query/initMapsMySQL', mysql.initMapsMySQL);
 app.use('/api/query/populate', mysql.insertData);
 
