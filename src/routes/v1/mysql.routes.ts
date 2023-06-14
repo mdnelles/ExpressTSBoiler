@@ -165,3 +165,95 @@ export const insertData = async (
     res.json({ msg: 'error occured', err: true, status: 500, error });
   }
 };
+
+export const createTableByData = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const { tableName } = req.body;
+
+  try {
+    let string = req.body.objRaw
+      .replace(/},/g, '}~~~')
+      .replace('[', '')
+      .replace(/\n/g, '')
+      .replace(/\t/g, '')
+      .replace(']', '')
+      .trim();
+
+    // Step 2: Split the string by commas
+    const stringArray = string.split('~~~');
+    let objArr: any[] = [];
+
+    stringArray.map((str: any) => {
+      let data = `{${str.substring(
+        str.indexOf('{') + 1,
+        str.lastIndexOf('}')
+      )}}`;
+
+      data = str.replace(/'/g, '"');
+      // make attribute names double quotes
+      data = data.replace(/([a-zA-Z0-9]+?):/g, '"$1":');
+
+      // if there is a coma after the last curly brace, remove it
+      if (data[data.length - 1] === ',') data = data.slice(0, -1);
+
+      objArr = [...objArr, JSON.parse(data)];
+    });
+
+    console.log(objArr[0]);
+    // print out the attribute names of the first object
+    console.log(Object.keys(objArr[0]));
+
+    const obj = objArr[0];
+    const columns = Object.keys(obj).map((key) => {
+      const type = typeof obj[key];
+      return {
+        name: key,
+        type:
+          type === 'boolean'
+            ? 'boolean'
+            : type === 'number'
+            ? 'int'
+            : 'varchar(45)'
+      };
+    });
+
+    const createTableQuery = `
+    CREATE TABLE ${tableName} (
+      ${columns.map((column) => `${column.name} ${column.type}`).join(', ')}
+    );
+    `;
+    // iterate over the column values and push into arrVal
+
+    await db.sequelize.query(`DROP TABLE IF EXISTS ${tableName};`);
+    await db.sequelize.query(createTableQuery);
+
+    objArr.forEach(async (obj) => {
+      const cols = columns.map((column) => `${column.name}`).join(', ');
+      const vals = columns
+        .map((column) =>
+          column.type.includes('char')
+            ? `'${obj[column.name]}'`
+            : obj[column.name]
+        )
+        .join(', ');
+      const insertQuery = `INSERT INTO ${tableName} (${cols} ) VALUES ( ${vals} ); `;
+
+      try {
+        await db.sequelize.query(insertQuery, {
+          type: Sequelize.QueryTypes.INSERT
+        });
+        console.log(`Successfully inserted row ${obj.id}`);
+      } catch (err) {
+        console.error(err);
+        return;
+      }
+    });
+
+    res.json({ msg: 'success', err: false, status: 200 });
+  } catch (error) {
+    console.error(error);
+    res.json({ msg: 'error occured', err: true, status: 500, error });
+  }
+};

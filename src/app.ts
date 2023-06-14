@@ -5,8 +5,9 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
 import { authRouter, passwordRouter, verifyEmailRouter } from './routes/v1';
-// import * as sql from './routes/v1/queriesSQLite';
-import * as mysql from './routes/v1/queriesMySQL';
+import { validHeader } from './middleware/hasValidHeader';
+import * as mysql from './routes/v1/mysql.routes';
+import * as file from './routes/v1/file.route';
 import isAuth from './middleware/isAuth';
 import { errorHandler } from './middleware/errorHandler';
 import config from './config/config';
@@ -48,6 +49,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1', passwordRouter);
 app.use('/api/v1', verifyEmailRouter);
 
+// mysql routes
 app.use('/api/query/insertOne', mysql.insertOne);
 app.use('/api/query/selectAll', mysql.selectAll);
 app.use('/api/query/selectOne', mysql.selectOne);
@@ -55,8 +57,14 @@ app.use('/api/query/selecFields', mysql.selectFields);
 app.use('/api/query/updateOne', mysql.updateOne);
 app.use('/api/query/deleteOne', mysql.deleteOne);
 app.use('/api/query/deleteAll', mysql.deleteAll);
+app.use('/api/query/createTableByData', mysql.createTableByData);
 
-// app.use('/api/query/initMapsSQLite', sql.initMapsSQLite);
+// file CRUD
+app.use('/api/query/insert', validHeader, file.insertOne);
+app.use('/api/query/read', file.selectAll);
+app.use('/api/query/delete', file.deleteOne);
+app.use('/api/query/update', file.updateOne);
+
 app.use('/api/query/initMapsMySQL', mysql.initMapsMySQL);
 app.use('/api/query/populate', mysql.insertData);
 
