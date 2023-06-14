@@ -8,14 +8,21 @@ import Sequelize from "sequelize";
           type: Sequelize.INTEGER, 
 					primaryKey: true, 
 					autoIncrement: true,
-        },
+        allowNull: false,
+      },
         Name: {
           type: Sequelize.STRING,  
-        },
+        allowNull: false,
+      },
         Address: {
           type: Sequelize.STRING,  
-        },
+        allowNull: false,
+      },
         Telephone: {
           type: Sequelize.STRING,  
-        },
-       }); 
+        allowNull: false,
+      },
+       },
+      {
+        timestamps: false,
+     }); 

@@ -3,6 +3,11 @@ import Sequelize from 'sequelize';
 import express from 'express';
 import { createModelsMySQL } from '../init/doModelsMySQL';
 import { generateDummyDataString } from '../../utils/generateDummy';
+import { Cars } from '../db/models/cars';
+
+const silent = {
+  silent: true
+};
 
 export const insertOne = async (
   req: express.Request,
@@ -10,9 +15,14 @@ export const insertOne = async (
 ) => {
   try {
     const { table, values } = req.body;
-    const data = await db.sequelize.models[table].create(values);
+    const valuesParsed = JSON.parse(values);
+    console.log('------values-----');
+    console.log(table, values);
+    const data = await Cars.create(valuesParsed, silent);
+    //const data = await db.sequelize.models[table].create(valuesParsed);
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
+    console.log(error);
     res.json({ msg: 'error', err: true, status: 500, error });
   }
 };
@@ -26,6 +36,7 @@ export const initMapsMySQL = async (
     const tmp = await createModelsMySQL(dbname, res);
     console.log(tmp);
   } catch (error) {
+    console.log(error);
     res.json({ msg: 'error', err: true, status: 500, error });
   }
 };
