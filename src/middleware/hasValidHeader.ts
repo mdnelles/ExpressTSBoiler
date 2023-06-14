@@ -4,7 +4,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 
-export const validHeader = (
+export const hasValidHeader = (
   req: Request,
   res: Response,
   next: NextFunction
