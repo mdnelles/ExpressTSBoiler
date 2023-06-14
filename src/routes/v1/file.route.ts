@@ -1,32 +1,42 @@
 import express from 'express';
-import fs from 'fs-extra';
 
-const dataFile = './src/data/DataFile.txt';
+let data = [
+  { id: 1, name: 'Ford', year: 2025 },
+  { id: 2, name: 'Chevy', year: 2025 },
+  { id: 3, name: 'Tesla', year: 2020 },
+  { id: 4, name: 'KIA', year: 2025 },
+  { id: 5, name: 'Honda', year: 2019 },
+  { id: 7, name: 'Nissan', year: 2018 }
+];
 
 export const insertOne = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const { newData } = req.body;
-    // read in the data from DataFile.txt
-    let data = fs.readFileSync(dataFile, 'utf8');
-    // parse the data into a JSON object
-    let dataObj = JSON.parse(data);
-    // add the new data
-    dataObj.push(newData);
-    // write the data back to the file
-    fs.writeFileSync(dataFile, JSON.stringify(dataObj));
+    let { newData } = req.body;
 
-    res.json({ msg: 'success', err: false, status: 200 });
+    // replace single quotes with double quotes
+    newData = newData.replace(/'/g, '"');
+
+    // enclose the attributes in double quotes
+    newData = newData.replace(/(\w+):/g, '"$1":');
+    console.log(newData);
+    data.push(JSON.parse(newData));
+
+    res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
+    console.error(error);
     res.json({ msg: 'error', err: true, status: 500, error });
   }
 };
 
-export const selectAll = async (res: express.Response) => {
+export const selectAll = async (
+  req: express.Request,
+  res: express.Response
+) => {
   try {
-    let data = fs.readFileSync(dataFile, 'utf8');
+    // do something to satisfy req
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
@@ -40,11 +50,8 @@ export const deleteOne = async (
 ) => {
   try {
     const { id } = req.body;
-    const data = fs.readFileSync(dataFile, 'utf8');
-    let dataObj = JSON.parse(data);
-    dataObj = dataObj.filter((item: any) => item.id !== id);
-    fs.writeFileSync(dataFile, JSON.stringify(dataObj));
-
+    console.log(id);
+    data = data.filter((item: any) => parseInt(item.id) !== parseInt(id));
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
@@ -57,12 +64,15 @@ export const updateOne = async (
   res: express.Response
 ) => {
   try {
-    const { id, newData } = req.body;
-    const data = fs.readFileSync(dataFile, 'utf8');
-    let dataObj = JSON.parse(data);
-    dataObj = dataObj.filter((item: any) => item.id !== id);
-    dataObj.push(newData);
-    fs.writeFileSync(dataFile, JSON.stringify(dataObj));
+    const { id } = req.body;
+    let { newData } = req.body;
+
+    newData = newData.replace(/'/g, '"');
+    // enclose the attributes in double quotes
+    newData = newData.replace(/(\w+):/g, '"$1":');
+
+    data = data.filter((item: any) => parseInt(item.id) !== parseInt(id));
+    data.push(JSON.parse(newData));
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
