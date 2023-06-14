@@ -38,11 +38,15 @@ export const insertOne = async (
 
 export const selectAll = async (_: express.Request, res: express.Response) => {
   try {
-    // do something to satisfy req
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
-    res.json({ msg: 'error', err: true, status: 500, error });
+    res.json({
+      msg: 'error',
+      err: true,
+      status: 500,
+      error: 'Something went wrong'
+    });
   }
 };
 

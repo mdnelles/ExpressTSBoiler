@@ -63,11 +63,15 @@ export async function createModelsMySQL(dbname: any, res: any) {
           type: Sequelize.${typ}, ${isPrimaryKey ? pkTrue : ''} ${
           autoIncrement ? aiTrue : ''
         }
-        },
+        allowNull: false,
+      },
       `;
       }
 
-      modelCode += ` }); `;
+      modelCode += ` },
+      {
+        timestamps: false,
+     }); `;
 
       // Define the file path to write the model file
       const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
