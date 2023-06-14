@@ -24,17 +24,19 @@ export const insertOne = async (
     console.log(newData);
     data.push(JSON.parse(newData));
 
-    res.json({ msg: 'success', err: false, status: 200, data });
+    res.json({ msg: 'success', err: false, status: 200 });
   } catch (error) {
     console.error(error);
-    res.json({ msg: 'error', err: true, status: 500, error });
+    res.json({
+      msg: 'error',
+      err: true,
+      status: 500,
+      error: 'Something went wrong'
+    });
   }
 };
 
-export const selectAll = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const selectAll = async (_: express.Request, res: express.Response) => {
   try {
     // do something to satisfy req
     res.json({ msg: 'success', err: false, status: 200, data });

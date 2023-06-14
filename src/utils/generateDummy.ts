@@ -4,9 +4,7 @@ export const generateDummyDataString = (fields: any) => {
   let vals = '';
   fields.forEach((field: any) => {
     // if (field.Field === 'ID' || field.Field === 'id') {
-    if (field.Extra === 'auto_increment') {
-      //str += ',';
-    } else {
+    if (field.Extra !== 'auto_increment') {
       const dataType = field.Type;
 
       // Add logic to generate dummy data based on different data types
@@ -98,7 +96,8 @@ const generateRandomString = (length: number) => {
   let text = '';
   const possible =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < length; i++)
+  for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
   return text;
 };
