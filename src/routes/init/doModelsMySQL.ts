@@ -80,11 +80,11 @@ export async function createModelsMySQL(dbname: any, res: any) {
       fs.writeFileSync(filePath, modelCode);
 
       console.log(`Created Sequelize model for table: ${tableName}`);
-      // res.json({
-      //   msg: `Created Sequelize model for table: ${tableName}`,
-      //   err: false,
-      //   status: 200
-      // });
+      res.json({
+        msg: `Created Sequelize model for table: ${tableName}`,
+        err: false,
+        status: 200
+      });
     });
   } catch (error) {
     console.log(error);

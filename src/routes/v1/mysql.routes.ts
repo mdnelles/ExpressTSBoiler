@@ -3,11 +3,12 @@ import Sequelize from 'sequelize';
 import express from 'express';
 import { createModelsMySQL } from '../init/doModelsMySQL';
 import { generateDummyDataString } from '../../utils/generateDummy';
-import { Cars } from '../db/models/cars';
-
-const silent = {
-  silent: true
-};
+import {
+  generateDeleteQuery,
+  generateInsertQuery,
+  generateUpdateQuery
+} from '../../utils/generateSQL';
+//import { Cars } from '../db/models/cars';
 
 export const insertOne = async (
   req: express.Request,
@@ -16,25 +17,12 @@ export const insertOne = async (
   try {
     const { table, values } = req.body;
     const valuesParsed = JSON.parse(values);
-    console.log('------values-----');
-    console.log(table, values);
-    const data = await Cars.create(valuesParsed, silent);
+    //const data = await Cars.create(valuesParsed, silent);
     //const data = await db.sequelize.models[table].create(valuesParsed);
+    const data = await db.sequelize.query(
+      generateInsertQuery(table, valuesParsed)
+    );
     res.json({ msg: 'success', err: false, status: 200, data });
-  } catch (error) {
-    console.log(error);
-    res.json({ msg: 'error', err: true, status: 500, error });
-  }
-};
-
-export const initMapsMySQL = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const { dbname } = req.body;
-    const tmp = await createModelsMySQL(dbname, res);
-    console.log(tmp);
   } catch (error) {
     console.log(error);
     res.json({ msg: 'error', err: true, status: 500, error });
@@ -47,9 +35,13 @@ export const selectAll = async (
 ) => {
   const { table, limit = 10 } = req.body;
   try {
-    const data = await db.sequelize.models[table].findAll({
-      limit: limit
-    });
+    //console.log(table);
+    //const data = await Cars.findAll({ limit: limit });
+    // const data = await db.sequelize.models[table].findAll({limit: limit});
+
+    const data = await db.sequelize.query(
+      `SELECT * FROM ${table} LIMIT ${limit}`
+    );
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
@@ -63,8 +55,8 @@ export const selectOne = async (
 ) => {
   try {
     const { table, field, value } = req.body;
-    const data = db.sequelize.query(
-      `SELECT * FROM ${table} WHERE ${field} = '${value}' `
+    const data = await db.sequelize.query(
+      `SELECT * FROM ${table} WHERE ${field} = '${value}' LIMIT 1`
     );
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -95,17 +87,20 @@ export const updateOne = async (
   res: express.Response
 ) => {
   try {
-    const { table, field, value, where } = req.body;
-    const data = await db.sequelize.update(
-      table,
-      {
-        [field]: value
-      },
-      where,
-      {
-        type: db.sequelize.QueryTypes.UPDATE
-      }
+    const { table, updateField, updateValue, whereCondition } = req.body;
+    const data = db.sequelize.query(
+      generateUpdateQuery(table, updateField, updateValue, whereCondition)
     );
+    // const data = await db.sequelize.update(
+    //   table,
+    //   {
+    //     [field]: value
+    //   },
+    //   where,
+    //   {
+    //     type: db.sequelize.QueryTypes.UPDATE
+    //   }
+    // );
 
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -120,11 +115,14 @@ export const deleteOne = async (
 ) => {
   try {
     const { table, field, value } = req.body;
-    const data = await db.sequelize.models[table].destroy({
-      where: {
-        [field]: value
-      }
-    });
+    const data = await db.sequelize.query(
+      generateDeleteQuery(table, field, value)
+    );
+    // const data = await db.sequelize.models[table].destroy({
+    //   where: {
+    //     [field]: value
+    //   }
+    // });
 
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -266,5 +264,19 @@ export const createTableByData = async (
   } catch (error) {
     console.error(error);
     res.json({ msg: 'error occured', err: true, status: 500, error });
+  }
+};
+
+export const initMapsMySQL = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { dbname } = req.body;
+    const tmp = await createModelsMySQL(dbname, res);
+    console.log(tmp);
+  } catch (error) {
+    console.log(error);
+    res.json({ msg: 'error', err: true, status: 500, error });
   }
 };
