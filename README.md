@@ -86,13 +86,13 @@ This pre-built authentication server is designed to simplify the process of addi
 ### Endpoints
 
 ```
-POST /v1/auth/signup - Signup
-POST /v1/auth/login - Login
-POST /v1/auth/refresh - Refresh access token
-POST /v1/forgot-password - Send reset password email
-POST /v1/reset-password/:token - Reset password
-POST /v1/send-verification-email - Send verification email
-POST /v1/verify-email/:token - Verify email
+POST /auth/signup - Signup
+POST /auth/login - Login
+POST /auth/refresh - Refresh access token
+POST /forgot-password - Send reset password email
+POST /reset-password/:token - Reset password
+POST /send-verification-email - Send verification email
+POST /verify-email/:token - Verify email
 ```
 
 <!-- Project Structure -->

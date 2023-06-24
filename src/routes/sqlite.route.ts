@@ -90,7 +90,7 @@
 //   });
 // };
 
-// // export const initMapsSQLite = (req: Request, res: Response) => {
+// // export const initModelsSQLite = (req: Request, res: Response) => {
 // //   try {
 // //     const { dbname = '' } = req.body;
 // //     (async () => {
@@ -102,7 +102,7 @@
 // //   }
 // // };
 
-// export const initMapsMySQL = (req: Request, res: Response) => {
+// export const initModelsMySQL = (req: Request, res: Response) => {
 //   try {
 //     const { dbname = '' } = req.body;
 //     (async () => {

@@ -1,14 +1,13 @@
 import { db } from '../db/config';
 import Sequelize from 'sequelize';
-import express from 'express';
-import { createModelsMySQL } from '../init/doModelsMySQL';
-import { generateDummyDataString } from '../../utils/generateDummy';
+import type express from 'express';
+import { createModelsMySQL } from './init/doModelsMySQL';
+import { generateDummyDataString } from '../utils/generateDummy';
 import {
   generateDeleteQuery,
   generateInsertQuery,
   generateUpdateQuery
-} from '../../utils/generateSQL';
-//import { Cars } from '../db/models/cars';
+} from '../utils/generateSQL';
 
 export const insertOne = async (
   req: express.Request,
@@ -17,8 +16,8 @@ export const insertOne = async (
   try {
     const { table, values } = req.body;
     const valuesParsed = JSON.parse(values);
-    //const data = await Cars.create(valuesParsed, silent);
-    //const data = await db.sequelize.models[table].create(valuesParsed);
+    // const data = await Cars.create(valuesParsed, silent);
+    // const data = await db.sequelize.models[table].create(valuesParsed);
     const data = await db.sequelize.query(
       generateInsertQuery(table, valuesParsed)
     );
@@ -35,8 +34,8 @@ export const selectAll = async (
 ) => {
   const { table, limit = 10 } = req.body;
   try {
-    //console.log(table);
-    //const data = await Cars.findAll({ limit: limit });
+    // console.log(table);
+    // const data = await Cars.findAll({ limit: limit });
     // const data = await db.sequelize.models[table].findAll({limit: limit});
 
     const data = await db.sequelize.query(
@@ -70,7 +69,7 @@ export const selectFields = async (
   res: express.Response
 ) => {
   try {
-    //SELECT foo, bar FROM ... attributes: ['foo', 'bar']
+    // SELECT foo, bar FROM ... attributes: ['foo', 'bar']
     const { table, attributes } = req.body;
     const data = db.sequelizemodels[table].findAll({
       attributes
@@ -182,7 +181,7 @@ export const createTableByData = async (
   const { tableName } = req.body;
 
   try {
-    let string = req.body.objRaw
+    const string = req.body.objRaw
       .replace(/},/g, '}~~~')
       .replace('[', '')
       .replace(/\n/g, '')
@@ -208,6 +207,7 @@ export const createTableByData = async (
       if (data[data.length - 1] === ',') data = data.slice(0, -1);
 
       objArr = [...objArr, JSON.parse(data)];
+      return objArr;
     });
 
     console.log(objArr[0]);
@@ -256,7 +256,6 @@ export const createTableByData = async (
         console.log(`Successfully inserted row ${obj.id}`);
       } catch (err) {
         console.error(err);
-        return;
       }
     });
 
@@ -267,12 +266,12 @@ export const createTableByData = async (
   }
 };
 
-export const initMapsMySQL = async (
+export const initModelsMySQL = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const { dbname } = req.body;
+    const dbname = req.body.dbname;
     const tmp = await createModelsMySQL(dbname, res);
     console.log(tmp);
   } catch (error) {

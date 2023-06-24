@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { insertOne } from '../../src/routes/v1/file.route';
+import { insertOne } from '../../src/routes/file.route';
 
 describe('insertOne function', () => {
   let req: Request;

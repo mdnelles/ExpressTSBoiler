@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { selectAll } from '../../src/routes/v1/file.route';
-import { ParsedQs } from 'qs';
+import { selectAll } from '../../src/routes/file.route';
+import type { ParsedQs } from 'qs';
 
 describe('selectAll function', () => {
   let res: Response;
@@ -41,7 +41,9 @@ describe('selectAll function', () => {
     const errorMessage = 'Something went wrong';
     const error = new Error(errorMessage);
 
-    jest.spyOn(console, 'error').mockImplementationOnce(() => {});
+    jest.spyOn(console, 'error').mockImplementationOnce(() => {
+      // Do nothing
+    });
 
     jest.spyOn(res, 'json').mockImplementationOnce(() => {
       throw error;

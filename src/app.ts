@@ -4,10 +4,10 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
-import { authRouter, passwordRouter, verifyEmailRouter } from './routes/v1';
+import { authRouter, passwordRouter, verifyEmailRouter } from './routes';
 import { hasValidHeader } from './middleware/hasValidHeader';
-import * as mysql from './routes/v1/mysql.routes';
-import * as file from './routes/v1/file.route';
+import * as mysql from './routes/mysql.routes';
+import * as file from './routes/file.route';
 import isAuth from './middleware/isAuth';
 import { errorHandler } from './middleware/errorHandler';
 import config from './config/config';
@@ -42,10 +42,10 @@ app.use(
 );
 
 if (config.node_env === 'production') {
-  app.use('/api/v1/auth', authLimiter);
+  app.use('/api/auth', authLimiter);
 }
 
-app.use('/api/v1/auth', authRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/v1', passwordRouter);
 app.use('/api/v1', verifyEmailRouter);
 
@@ -65,7 +65,7 @@ app.use('/api/query/read', file.selectAll);
 app.use('/api/query/delete', file.deleteOne);
 app.use('/api/query/update', file.updateOne);
 
-app.use('/api/query/initMapsMySQL', mysql.initMapsMySQL);
+app.use('/api/query/initModelsMySQL', mysql.initModelsMySQL);
 app.use('/api/query/populate', mysql.insertData);
 
 app.get('/secret', isAuth, (_req, res) => {

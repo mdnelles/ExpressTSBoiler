@@ -1,12 +1,12 @@
 import fs from 'fs-extra';
 import Sequelize from 'sequelize';
-//const env = require('dotenv').config().parsed;
+import path from 'path';
 
 // Import the SQLite database instance from ./config
-import { db } from '../db/config';
+import { db } from '../../db/config';
 
 // Define a function to create Sequelize models based on table columns
-export async function createModelsMySQL(dbname: any, res: any) {
+export async function createModelsMySQL (dbname: any, res: any) {
   // Retrieve all table names from the database
   try {
     // Retrieve all table names from the database
@@ -74,17 +74,24 @@ export async function createModelsMySQL(dbname: any, res: any) {
      }); `;
 
       // Define the file path to write the model file
-      const filePath = `./src/routes/db/models/${tableName}.ts`; // Modify the path as needed
-
-      // Write the model code to the file
-      fs.writeFileSync(filePath, modelCode);
+      const filePath = path
+        .resolve(__dirname, '../../src/db/models', `${tableName}.ts`)
+        .toString()
+        .replace('/dist', '');
+      console.log('......filePath');
+      console.log(filePath);
+      try {
+        fs.writeFileSync(filePath, modelCode);
+      } catch (err) {
+        console.error(err);
+      }
 
       console.log(`Created Sequelize model for table: ${tableName}`);
-      res.json({
-        msg: `Created Sequelize model for table: ${tableName}`,
-        err: false,
-        status: 200
-      });
+    });
+    res.json({
+      msg: `Created Sequelize model for table: ${JSON.stringify(tableNames)}`,
+      err: false,
+      status: 200
     });
   } catch (error) {
     console.log(error);

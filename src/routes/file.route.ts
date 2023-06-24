@@ -1,4 +1,4 @@
-import express from 'express';
+import type express from 'express';
 
 let data = [
   { id: 1, name: 'Ford', year: 2025 },
