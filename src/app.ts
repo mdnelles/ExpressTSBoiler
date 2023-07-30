@@ -25,9 +25,7 @@ app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
-
 app.use(xssMiddleware());
-
 app.use(cookieParser());
 
 // Compression is used to reduce the size of the response body
