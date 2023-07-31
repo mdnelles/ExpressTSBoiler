@@ -8,25 +8,7 @@ import {
   generateInsertQuery,
   generateUpdateQuery
 } from '../utils/generateSQL';
-
-export const insertOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const { table, values } = req.body;
-    const valuesParsed = JSON.parse(values);
-    // const data = await Cars.create(valuesParsed, silent);
-    // const data = await db.sequelize.models[table].create(valuesParsed);
-    const data = await db.sequelize.query(
-      generateInsertQuery(table, valuesParsed)
-    );
-    res.json({ msg: 'success', err: false, status: 200, data });
-  } catch (error) {
-    console.log(error);
-    res.json({ msg: 'error', err: true, status: 500, error });
-  }
-};
+const env = require('dotenv').config().parsed;
 
 export const selectAll = async (
   req: express.Request,
@@ -34,16 +16,35 @@ export const selectAll = async (
 ) => {
   const { table, limit = 10 } = req.body;
   try {
-    // console.log(table);
-    // const data = await Cars.findAll({ limit: limit });
     // const data = await db.sequelize.models[table].findAll({limit: limit});
-
     const data = await db.sequelize.query(
-      `SELECT * FROM ${table} LIMIT ${limit}`
+      `SELECT * FROM ${table} LIMIT ${limit}`,
+      db.sequelize.QueryTypes.SELECT
     );
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
+    res.json({ msg: 'error', err: true, status: 500, error });
+  }
+};
+
+export const insertOne = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { table, values } = req.body;
+    console.log(values);
+    const valuesParsed = JSON.parse(values);
+    // const data = await Cars.create(valuesParsed, silent);
+    // const data = await db.sequelize.models[table].create(valuesParsed);
+    const data = await db.sequelize.query(
+      generateInsertQuery(table, valuesParsed),
+      db.sequelize.QueryTypes.INSERT
+    );
+    res.json({ msg: 'success', err: false, status: 200, data });
+  } catch (error) {
+    console.log(error);
     res.json({ msg: 'error', err: true, status: 500, error });
   }
 };
@@ -266,12 +267,49 @@ export const createTableByData = async (
   }
 };
 
+export const joinSQL = async (req: express.Request, res: express.Response) => {
+  try {
+    const { table1Name, table2Name, table1JoinAttribute, table2JoinAttribute } =
+      req.body;
+
+    // Sanitize inputs to prevent SQL injection
+    const sanitizedTable1Name = db.sequelize
+      .getQueryInterface()
+      .escape(table1Name);
+    const sanitizedTable2Name = db.sequelize
+      .getQueryInterface()
+      .escape(table2Name);
+    const sanitizedTable1JoinAttribute = db.sequelize
+      .getQueryInterface()
+      .escape(table1JoinAttribute);
+    const sanitizedTable2JoinAttribute = db.sequelize
+      .getQueryInterface()
+      .escape(table2JoinAttribute);
+
+    const sqlQuery = `
+      SELECT *
+      FROM ${sanitizedTable1Name} as t1
+      JOIN ${sanitizedTable2Name} as t2
+      ON t1.${sanitizedTable1JoinAttribute} = t2.${sanitizedTable2JoinAttribute}
+    `;
+
+    const results = await db.sequelize.query(sqlQuery, {
+      type: db.sequelize.QueryTypes.SELECT
+    });
+
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while joining tables' });
+  }
+};
+
 export const initModelsMySQL = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const dbname = req.body.dbname;
+    const dbname = req.body.dbname || env.MYSQLDB;
     const tmp = await createModelsMySQL(dbname, res);
     console.log(tmp);
   } catch (error) {

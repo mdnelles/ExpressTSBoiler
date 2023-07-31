@@ -55,6 +55,7 @@ app.use('/api/query/selecFields', mysql.selectFields);
 app.use('/api/query/updateOne', mysql.updateOne);
 app.use('/api/query/deleteOne', mysql.deleteOne);
 app.use('/api/query/deleteAll', mysql.deleteAll);
+app.use('/api/query/joinSQL', mysql.joinSQL);
 app.use('/api/query/createTableByData', mysql.createTableByData);
 
 // file CRUD
