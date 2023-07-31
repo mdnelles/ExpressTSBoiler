@@ -4,23 +4,23 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
-import { authRouter, passwordRouter, verifyEmailRouter } from './routes';
-import { hasValidHeader } from './middleware/hasValidHeader';
+import authLimiter from './middleware/authLimiter';
+import path from 'path';
+
+import config from './config/config';
+// custom middleware
+import errorHandler from './middleware/errorHandler';
+import isAuth from './middleware/isAuth';
+import hasValidHeader from './middleware/hasValidHeader';
+import xssMiddleware from './middleware/xssMiddleware';
+// custom routes
+import * as rt from './routes';
 import * as mysql from './routes/mysql.routes';
 import * as file from './routes/file.route';
-import isAuth from './middleware/isAuth';
-import { errorHandler } from './middleware/errorHandler';
-import config from './config/config';
-import authLimiter from './middleware/authLimiter';
-import { xssMiddleware } from './middleware/xssMiddleware';
-import path from 'path';
 
 const app: Express = express();
 
-// Helmet is used to secure this app by configuring the http-header
 app.use(helmet());
-
-// parse json request body
 app.use(express.json());
 
 // parse urlencoded request body
@@ -43,9 +43,9 @@ if (config.node_env === 'production') {
   app.use('/api/auth', authLimiter);
 }
 
-app.use('/api/auth', authRouter);
-app.use('/api/v1', passwordRouter);
-app.use('/api/v1', verifyEmailRouter);
+app.use('/api/auth', rt.authRouter);
+app.use('/api/pw', rt.passwordRouter);
+app.use('/api/v1', rt.verifyEmailRouter);
 
 // mysql routes
 app.use('/api/query/insertOne', mysql.insertOne);
@@ -63,6 +63,7 @@ app.use('/api/query/read', file.selectAll);
 app.use('/api/query/delete', file.deleteOne);
 app.use('/api/query/update', file.updateOne);
 
+// init functions
 app.use('/api/query/initModelsMySQL', mysql.initModelsMySQL);
 app.use('/api/query/populate', mysql.insertData);
 
