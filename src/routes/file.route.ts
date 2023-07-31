@@ -102,9 +102,8 @@ export const updateOne = async (
     parsedData = parsedData.filter(
       (item: any) => parseInt(item.id) !== parseInt(id)
     );
-    console.log(parsedData);
+
     parsedData = [...parsedData, newData];
-    console.log(parsedData);
     data = JSON.stringify(parsedData, null, 2);
     await fs.writeFile(filePath, data);
 
