@@ -8,7 +8,9 @@ import {
   generateInsertQuery,
   generateUpdateQuery
 } from '../utils/generateSQL';
-const env = require('dotenv').config().parsed;
+import dotenv from 'dotenv';
+
+const env = dotenv.config().parsed;
 
 export const selectAll = async (
   req: express.Request,
