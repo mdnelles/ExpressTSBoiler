@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 import { db } from '../config';
 
-export const Orders = db.sequelize.define(
+const Orders = db.sequelize.define(
   'orders',
   {
     orderNumber: {
@@ -38,3 +38,5 @@ export const Orders = db.sequelize.define(
     timestamps: false
   }
 );
+
+export default Orders;

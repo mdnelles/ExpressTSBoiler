@@ -1,5 +1,5 @@
-import type express from 'express';
 import * as fs from 'fs-extra';
+import { type Req, type Res } from '../types/express';
 
 const getData = async (location: string) => {
   let data = '';
@@ -11,10 +11,7 @@ const getData = async (location: string) => {
   return data;
 };
 
-export const insertOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const insertOne = async (req: Req, res: Res) => {
   try {
     let { newData, filePath = './src/data/cars.txt' } = req.body;
 
@@ -43,10 +40,7 @@ export const insertOne = async (
   }
 };
 
-export const selectAll = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const selectAll = async (req: Req, res: Res) => {
   try {
     const { filePath = './src/data/cars.txt' } = req.body;
     const data: any = await getData(filePath);
@@ -62,10 +56,7 @@ export const selectAll = async (
   }
 };
 
-export const deleteOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const deleteOne = async (req: Req, res: Res) => {
   try {
     const { id, filePath = './src/data/cars.txt' } = req.body;
 
@@ -84,10 +75,7 @@ export const deleteOne = async (
   }
 };
 
-export const updateOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const updateOne = async (req: Req, res: Res) => {
   try {
     const { id, filePath = './src/data/cars.txt' } = req.body;
     let { newData } = req.body;

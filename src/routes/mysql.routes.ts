@@ -8,6 +8,7 @@ import {
   generateInsertQuery,
   generateUpdateQuery
 } from '../utils/generateSQL';
+
 import { type Req, type Res } from '../types/express';
 import dotenv from 'dotenv';
 
@@ -16,7 +17,8 @@ const env = dotenv.config().parsed;
 export const selectAll = async (req: Req, res: Res) => {
   const { table, limit = 10 } = req.body;
   try {
-    // const data = await db.sequelize.models[table].findAll({limit: limit});
+    console.log('>>>>>>', table, limit);
+    // const data = await Orders.findAll({ limit: parseInt(limit as string, 10) });
     const data = await db.sequelize.query(
       `SELECT * FROM ${table} LIMIT ${limit}`,
       db.sequelize.QueryTypes.SELECT
@@ -33,8 +35,6 @@ export const insertOne = async (req: Req, res: Res) => {
     const { table, values } = req.body;
     console.log(values);
     const valuesParsed = JSON.parse(values);
-    // const data = await Cars.create(valuesParsed, silent);
-    // const data = await db.sequelize.models[table].create(valuesParsed);
     const data = await db.sequelize.query(
       generateInsertQuery(table, valuesParsed),
       db.sequelize.QueryTypes.INSERT
@@ -61,7 +61,6 @@ export const selectOne = async (req: Req, res: Res) => {
 
 export const selectFields = async (req: Req, res: Res) => {
   try {
-    // SELECT foo, bar FROM ... attributes: ['foo', 'bar']
     const { table, attributes } = req.body;
     const data = db.sequelizemodels[table].findAll({
       attributes
