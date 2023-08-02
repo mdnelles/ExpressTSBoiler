@@ -8,14 +8,12 @@ import {
   generateInsertQuery,
   generateUpdateQuery
 } from '../utils/generateSQL';
+import { type Req, type Res } from '../types/express';
 import dotenv from 'dotenv';
 
 const env = dotenv.config().parsed;
 
-export const selectAll = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const selectAll = async (req: Req, res: Res) => {
   const { table, limit = 10 } = req.body;
   try {
     // const data = await db.sequelize.models[table].findAll({limit: limit});
@@ -30,10 +28,7 @@ export const selectAll = async (
   }
 };
 
-export const insertOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const insertOne = async (req: Req, res: Res) => {
   try {
     const { table, values } = req.body;
     console.log(values);
@@ -51,10 +46,7 @@ export const insertOne = async (
   }
 };
 
-export const selectOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const selectOne = async (req: Req, res: Res) => {
   try {
     const { table, field, value } = req.body;
     const data = await db.sequelize.query(
@@ -67,10 +59,7 @@ export const selectOne = async (
   }
 };
 
-export const selectFields = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const selectFields = async (req: Req, res: Res) => {
   try {
     // SELECT foo, bar FROM ... attributes: ['foo', 'bar']
     const { table, attributes } = req.body;
@@ -84,10 +73,7 @@ export const selectFields = async (
   }
 };
 
-export const updateOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const updateOne = async (req: Req, res: Res) => {
   try {
     const { table, updateField, updateValue, whereCondition } = req.body;
     const data = db.sequelize.query(
@@ -111,10 +97,7 @@ export const updateOne = async (
   }
 };
 
-export const deleteOne = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const deleteOne = async (req: Req, res: Res) => {
   try {
     const { table, field, value } = req.body;
     const data = await db.sequelize.query(
@@ -133,10 +116,7 @@ export const deleteOne = async (
   }
 };
 
-export const deleteAll = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const deleteAll = async (req: Req, res: Res) => {
   try {
     const { table } = req.body;
     const data = db.sequelize.models[table].destroy({
@@ -149,10 +129,7 @@ export const deleteAll = async (
   }
 };
 
-export const insertData = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const insertData = async (req: Req, res: Res) => {
   const { dbname } = req.body;
   try {
     const tableNames = await db.sequelize.query(`SHOW TABLES FROM ${dbname} `, {
@@ -177,10 +154,7 @@ export const insertData = async (
   }
 };
 
-export const createTableByData = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const createTableByData = async (req: Req, res: Res) => {
   const { tableName } = req.body;
 
   try {
@@ -306,12 +280,10 @@ export const joinSQL = async (req: express.Request, res: express.Response) => {
   }
 };
 
-export const initModelsMySQL = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const initModelsMySQL = async (req: Req, res: Res) => {
   try {
-    const dbname = req.body.dbname || env.MYSQLDB;
+    const envdb = env && env['MYSQLDB'] ? env['MYSQLDB'] : 'test';
+    const dbname = req.body.dbname || envdb;
     const tmp = await createModelsMySQL(dbname, res);
     console.log(tmp);
   } catch (error) {

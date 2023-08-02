@@ -12,8 +12,9 @@
     "baseUrl": ".",
     "sourceRoot": "./src",
     "incremental": true,
-    "skipLibCheck": true, 
+    "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"],
     "lib": ["es2022", "dom"],
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -28,11 +29,11 @@
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "noImplicitReturns": false, // is false bc of some error with next() and other returns 
+    "noImplicitReturns": false, // is false bc of some error with next() and other returns
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "forceConsistentCasingInFileNames": true, 
-  },
+    "forceConsistentCasingInFileNames": true
+  }
 }
