@@ -17,7 +17,6 @@ const env = dotenv.config().parsed;
 export const selectAll = async (req: Req, res: Res) => {
   const { table, limit = 10 } = req.body;
   try {
-    console.log('>>>>>>', table, limit);
     // const data = await Orders.findAll({ limit: parseInt(limit as string, 10) });
     const data = await db.sequelize.query(
       `SELECT * FROM ${table} LIMIT ${limit}`,
@@ -33,7 +32,6 @@ export const selectAll = async (req: Req, res: Res) => {
 export const insertOne = async (req: Req, res: Res) => {
   try {
     const { table, values } = req.body;
-    console.log(values);
     const valuesParsed = JSON.parse(values);
     const data = await db.sequelize.query(
       generateInsertQuery(table, valuesParsed),
@@ -50,7 +48,8 @@ export const selectOne = async (req: Req, res: Res) => {
   try {
     const { table, field, value } = req.body;
     const data = await db.sequelize.query(
-      `SELECT * FROM ${table} WHERE ${field} = '${value}' LIMIT 1`
+      `SELECT * FROM ${table} WHERE ${field} = '${value}' LIMIT 1`,
+      db.sequelize.QueryTypes.SELECT
     );
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -76,18 +75,9 @@ export const updateOne = async (req: Req, res: Res) => {
   try {
     const { table, updateField, updateValue, whereCondition } = req.body;
     const data = db.sequelize.query(
-      generateUpdateQuery(table, updateField, updateValue, whereCondition)
+      generateUpdateQuery(table, updateField, updateValue, whereCondition),
+      db.sequelize.QueryTypes.UPDATE
     );
-    // const data = await db.sequelize.update(
-    //   table,
-    //   {
-    //     [field]: value
-    //   },
-    //   where,
-    //   {
-    //     type: db.sequelize.QueryTypes.UPDATE
-    //   }
-    // );
 
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -100,13 +90,9 @@ export const deleteOne = async (req: Req, res: Res) => {
   try {
     const { table, field, value } = req.body;
     const data = await db.sequelize.query(
-      generateDeleteQuery(table, field, value)
+      generateDeleteQuery(table, field, value),
+      db.sequelize.QueryTypes.DELETE
     );
-    // const data = await db.sequelize.models[table].destroy({
-    //   where: {
-    //     [field]: value
-    //   }
-    // });
 
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -137,13 +123,15 @@ export const insertData = async (req: Req, res: Res) => {
     tableNames.map(async (tableName: any) => {
       // Retrieve column information for the current table
       const columns = await db.sequelize.query(
-        `SHOW COLUMNS FROM ${dbname}.${tableName}`
+        `SHOW COLUMNS FROM ${dbname}.${tableName}`,
+        db.sequelize.QueryTypes.SHOWCOLUMNS
       );
 
       // Generate dummy data based on data types and insert 5 items
       const obj = generateDummyDataString(columns[0]);
       await db.sequelize.query(
-        `INSERT INTO ${tableName} (${obj.cols}) VALUES (${obj.vals}); `
+        `INSERT INTO ${tableName} (${obj.cols}) VALUES (${obj.vals}); `,
+        db.sequelize.QueryTypes.INSERT
       );
     });
 

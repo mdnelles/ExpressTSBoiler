@@ -3,9 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import compressFilter from './utils/compressFilter.util';
-import authLimiter from './middleware/authLimiter';
 import path from 'path';
+import compressFilter from './utils/compressFilter.util';
 
 import config from './config/config';
 // custom middleware
@@ -13,6 +12,7 @@ import errorHandler from './middleware/errorHandler';
 import isAuth from './middleware/isAuth';
 import hasValidHeader from './middleware/hasValidHeader';
 import xssMiddleware from './middleware/xssMiddleware';
+import authLimiter from './middleware/authLimiter';
 // custom routes
 import * as rt from './routes';
 import * as mysql from './routes/mysql.routes';
