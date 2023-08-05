@@ -1,6 +1,5 @@
 import { db } from '../db/config';
 import Sequelize from 'sequelize';
-import type express from 'express';
 import { createModelsMySQL } from './init/doModelsMySQL';
 import { generateDummyDataString } from '../utils/generateDummy';
 import {
@@ -230,7 +229,7 @@ export const createTableByData = async (req: Req, res: Res) => {
   }
 };
 
-export const joinSQL = async (req: express.Request, res: express.Response) => {
+export const joinSQL = async (req: Req, res: Res) => {
   try {
     const { table1Name, table2Name, table1JoinAttribute, table2JoinAttribute } =
       req.body;
