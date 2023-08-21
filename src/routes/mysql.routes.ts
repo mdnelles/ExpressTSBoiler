@@ -1,4 +1,4 @@
-import { db } from '../db/config';
+import { db } from '../config/dbconfig';
 import Sequelize from 'sequelize';
 import { createModelsMySQL } from './init/doModelsMySQL';
 import { generateDummyDataString } from '../utils/generateDummy';
