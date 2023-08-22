@@ -1,48 +1,36 @@
 import Sequelize from 'sequelize';
 import { db } from '../config/dbconfig';
 
-export const Employee = db.sequelize.define(
-  'Employee',
+const Orders = db.sequelize.define(
+  'orders',
   {
-    ID: {
+    orderNumber: {
       type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true
+    },
+    orderDate: {
+      type: Sequelize.DATEONLY,
       allowNull: false
     },
-    Name: {
+    requiredDate: {
+      type: Sequelize.DATEONLY,
+      allowNull: false
+    },
+    shippedDate: {
+      type: Sequelize.DATEONLY,
+      allowNull: false
+    },
+    status: {
       type: Sequelize.STRING,
-
       allowNull: false
     },
-    Type: {
+    comments: {
       type: Sequelize.STRING,
-
       allowNull: false
     },
-    Telephone: {
-      type: Sequelize.STRING,
-
-      allowNull: false
-    },
-    Address: {
-      type: Sequelize.STRING,
-
-      allowNull: false
-    },
-    EmploymentDate: {
-      type: Sequelize.STRING,
-
-      allowNull: false
-    },
-    ShopID: {
+    customerNumber: {
       type: Sequelize.INTEGER,
-
-      allowNull: false
-    },
-    EmployeeTypeID: {
-      type: Sequelize.INTEGER,
-
       allowNull: false
     }
   },
@@ -50,3 +38,4 @@ export const Employee = db.sequelize.define(
     timestamps: false
   }
 );
+export default Orders;

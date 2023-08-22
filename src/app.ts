@@ -51,7 +51,7 @@ app.use('/api/v1', rt.verifyEmailRouter);
 app.use('/api/query/insertOne', mysql.insertOne);
 app.use('/api/query/selectAll', mysql.selectAll);
 app.use('/api/query/selectOne', mysql.selectOne);
-app.use('/api/query/selecFields', mysql.selectFields);
+app.use('/api/query/selectFields', mysql.selectFields);
 app.use('/api/query/updateOne', mysql.updateOne);
 app.use('/api/query/deleteOne', mysql.deleteOne);
 app.use('/api/query/deleteAll', mysql.deleteAll);

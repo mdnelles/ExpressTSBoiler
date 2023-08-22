@@ -5,22 +5,41 @@ import { generateDummyDataString } from '../utils/generateDummy';
 import {
   generateDeleteQuery,
   generateInsertQuery,
-  generateUpdateQuery
+  generateJoinQuery,
+  generateSQLFunctionQuery,
+  generateUpdateQuery,
+  selectMulitpleFieldsQuery
 } from '../utils/generateSQL';
 
 import { type Req, type Res } from '../types/express';
-import dotenv from 'dotenv';
 
+import { type ModelsIndex } from 'src/types/models';
+import * as allModels from '../models';
+
+import dotenv from 'dotenv';
+import {
+  firstToUpper,
+  noModel,
+  onlyFirstIsUpper,
+  tableExists
+} from '../utils/generalFunctions';
+const models: ModelsIndex = allModels;
 const env = dotenv.config().parsed;
+const dbs = db.sequelize;
 
 export const selectAll = async (req: Req, res: Res) => {
-  const { table, limit = 10 } = req.body;
+  const { limit = 10 } = req.body;
+
   try {
-    // const data = await Orders.findAll({ limit: parseInt(limit as string, 10) });
-    const data = await db.sequelize.query(
-      `SELECT * FROM ${table} LIMIT ${limit}`,
-      db.sequelize.QueryTypes.SELECT
-    );
+    if (!models[firstToUpper(req.body.table)]) {
+      throw new Error(noModel(req.body.table));
+    }
+    const table = onlyFirstIsUpper(req.body.table);
+    console.log(`SELECT * FROM ${table} LIMIT ${limit};`); // display SQL
+    const data = await models[firstToUpper(table)].findAll({
+      limit: parseInt(limit as string, 10)
+    });
+
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
@@ -30,12 +49,14 @@ export const selectAll = async (req: Req, res: Res) => {
 
 export const insertOne = async (req: Req, res: Res) => {
   try {
-    const { table, values } = req.body;
+    const { values } = req.body;
+
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
     const valuesParsed = JSON.parse(values);
-    const data = await db.sequelize.query(
-      generateInsertQuery(table, valuesParsed),
-      db.sequelize.QueryTypes.INSERT
-    );
+    console.log(generateInsertQuery(table, valuesParsed)); // display SQL
+
+    const data = await models[table].create(valuesParsed);
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.log(error);
@@ -45,11 +66,14 @@ export const insertOne = async (req: Req, res: Res) => {
 
 export const selectOne = async (req: Req, res: Res) => {
   try {
-    const { table, field, value } = req.body;
-    const data = await db.sequelize.query(
-      `SELECT * FROM ${table} WHERE ${field} = '${value}' LIMIT 1`,
-      db.sequelize.QueryTypes.SELECT
-    );
+    const { field, value } = req.body;
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
+
+    console.log(`SELECT * FROM ${table} WHERE ${field} = '${value}' LIMIT 1;`);
+    const data = await models[table].findOne({
+      where: { [field]: value }
+    });
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
     console.error(error);
@@ -59,9 +83,18 @@ export const selectOne = async (req: Req, res: Res) => {
 
 export const selectFields = async (req: Req, res: Res) => {
   try {
-    const { table, attributes } = req.body;
-    const data = db.sequelizemodels[table].findAll({
-      attributes
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
+    const { attributes, limit = 10, likeOperator = false } = req.body;
+
+    const attributesParsed =
+      typeof attributes === 'string' ? JSON.parse(attributes) : attributes;
+
+    console.log(
+      selectMulitpleFieldsQuery(table, attributesParsed, limit, likeOperator)
+    );
+    const data = await models[table].findAll({
+      where: attributesParsed
     });
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -72,10 +105,13 @@ export const selectFields = async (req: Req, res: Res) => {
 
 export const updateOne = async (req: Req, res: Res) => {
   try {
-    const { table, updateField, updateValue, whereCondition } = req.body;
-    const data = db.sequelize.query(
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
+
+    const { updateField, updateValue, whereCondition } = req.body;
+    const data = dbs.query(
       generateUpdateQuery(table, updateField, updateValue, whereCondition),
-      db.sequelize.QueryTypes.UPDATE
+      dbs.QueryTypes.UPDATE
     );
 
     res.json({ msg: 'success', err: false, status: 200, data });
@@ -87,11 +123,12 @@ export const updateOne = async (req: Req, res: Res) => {
 
 export const deleteOne = async (req: Req, res: Res) => {
   try {
-    const { table, field, value } = req.body;
-    const data = await db.sequelize.query(
-      generateDeleteQuery(table, field, value),
-      db.sequelize.QueryTypes.DELETE
-    );
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
+
+    const { field, value } = req.body;
+    console.log(generateDeleteQuery(table, field, value));
+    const data = await models[table].destroy({ where: { [field]: value } });
 
     res.json({ msg: 'success', err: false, status: 200, data });
   } catch (error) {
@@ -102,8 +139,9 @@ export const deleteOne = async (req: Req, res: Res) => {
 
 export const deleteAll = async (req: Req, res: Res) => {
   try {
-    const { table } = req.body;
-    const data = db.sequelize.models[table].destroy({
+    if (!tableExists(req.body.table, models)) { throw new Error(noModel(req.body.table)); }
+    const table = onlyFirstIsUpper(req.body.table);
+    const data = dbs.models[table].destroy({
       truncate: true
     });
     res.json({ msg: 'success', err: false, status: 200, data });
@@ -116,21 +154,21 @@ export const deleteAll = async (req: Req, res: Res) => {
 export const insertData = async (req: Req, res: Res) => {
   const { dbname } = req.body;
   try {
-    const tableNames = await db.sequelize.query(`SHOW TABLES FROM ${dbname} `, {
+    const tableNames = await dbs.query(`SHOW TABLES FROM ${dbname} `, {
       type: Sequelize.QueryTypes.SHOWTABLES
     });
     tableNames.map(async (tableName: any) => {
       // Retrieve column information for the current table
-      const columns = await db.sequelize.query(
+      const columns = await dbs.query(
         `SHOW COLUMNS FROM ${dbname}.${tableName}`,
-        db.sequelize.QueryTypes.SHOWCOLUMNS
+        dbs.QueryTypes.SHOWCOLUMNS
       );
 
       // Generate dummy data based on data types and insert 5 items
       const obj = generateDummyDataString(columns[0]);
-      await db.sequelize.query(
+      await dbs.query(
         `INSERT INTO ${tableName} (${obj.cols}) VALUES (${obj.vals}); `,
-        db.sequelize.QueryTypes.INSERT
+        dbs.QueryTypes.INSERT
       );
     });
 
@@ -198,8 +236,8 @@ export const createTableByData = async (req: Req, res: Res) => {
     `;
     // iterate over the column values and push into arrVal
 
-    await db.sequelize.query(`DROP TABLE IF EXISTS ${tableName};`);
-    await db.sequelize.query(createTableQuery);
+    await dbs.query(`DROP TABLE IF EXISTS ${tableName};`);
+    await dbs.query(createTableQuery);
 
     objArr.forEach(async (obj) => {
       const cols = columns.map((column) => `${column.name}`).join(', ');
@@ -213,7 +251,7 @@ export const createTableByData = async (req: Req, res: Res) => {
       const insertQuery = `INSERT INTO ${tableName} (${cols} ) VALUES ( ${vals} ); `;
 
       try {
-        await db.sequelize.query(insertQuery, {
+        await dbs.query(insertQuery, {
           type: Sequelize.QueryTypes.INSERT
         });
         console.log(`Successfully inserted row ${obj.id}`);
@@ -231,32 +269,55 @@ export const createTableByData = async (req: Req, res: Res) => {
 
 export const joinSQL = async (req: Req, res: Res) => {
   try {
-    const { table1Name, table2Name, table1JoinAttribute, table2JoinAttribute } =
-      req.body;
+    if (!models[firstToUpper(req.body.table1)]) { throw new Error(noModel(req.body.table1)); }
 
-    // Sanitize inputs to prevent SQL injection
-    const sanitizedTable1Name = db.sequelize
-      .getQueryInterface()
-      .escape(table1Name);
-    const sanitizedTable2Name = db.sequelize
-      .getQueryInterface()
-      .escape(table2Name);
-    const sanitizedTable1JoinAttribute = db.sequelize
-      .getQueryInterface()
-      .escape(table1JoinAttribute);
-    const sanitizedTable2JoinAttribute = db.sequelize
-      .getQueryInterface()
-      .escape(table2JoinAttribute);
+    if (!models[firstToUpper(req.body.table2)]) { throw new Error(noModel(req.body.table2)); }
 
-    const sqlQuery = `
-      SELECT *
-      FROM ${sanitizedTable1Name} as t1
-      JOIN ${sanitizedTable2Name} as t2
-      ON t1.${sanitizedTable1JoinAttribute} = t2.${sanitizedTable2JoinAttribute}
-    `;
+    const table1 = onlyFirstIsUpper(req.body.table1);
+    const table2 = onlyFirstIsUpper(req.body.table2);
 
-    const results = await db.sequelize.query(sqlQuery, {
-      type: db.sequelize.QueryTypes.SELECT
+    const { table1Column, table2Column } = req.body;
+    console.log(generateJoinQuery(table1, table2, table1Column, table2Column));
+
+    console.log(table1, table2);
+    // const data = await
+    models[table1].hasMany(models[table2], {
+      foreignKey: table2Column,
+      sourceKey: table1Column
+    });
+    models[table2].belongsTo(models[table1], {
+      foreignKey: table2Column,
+      targetKey: table1Column
+    });
+
+    const data = await models[table1].findAll({
+      include: [
+        {
+          model: models[table2],
+          required: true // this makes the join INNER rather than LEFT OUTER
+        }
+      ]
+    });
+
+    res.json({ msg: 'success', err: false, status: 200, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while joining tables' });
+  }
+};
+
+export const functionSQL = async (req: Req, res: Res) => {
+  try {
+    const { functionName, columnName, alias, groupByColumn } = req.body;
+
+    const sqlQuery = generateSQLFunctionQuery(
+      functionName,
+      columnName,
+      alias,
+      groupByColumn
+    );
+    const results = await dbs.query(sqlQuery, {
+      type: dbs.QueryTypes.SELECT
     });
 
     res.json(results);

@@ -1,28 +1,25 @@
 import Sequelize from 'sequelize';
 import { db } from '../config/dbconfig';
 
-export const Shop = db.sequelize.define(
-  'Shop',
+const Payments = db.sequelize.define(
+  'payments',
   {
-    ID: {
+    customerNumber: {
       type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true
+    },
+    checkNumber: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      primaryKey: true
+    },
+    paymentDate: {
+      type: Sequelize.DATEONLY,
       allowNull: false
     },
-    Name: {
+    amount: {
       type: Sequelize.STRING,
-
-      allowNull: false
-    },
-    Address: {
-      type: Sequelize.STRING,
-
-      allowNull: false
-    },
-    telephone: {
-      type: Sequelize.STRING,
-
       allowNull: false
     }
   },
@@ -30,3 +27,4 @@ export const Shop = db.sequelize.define(
     timestamps: false
   }
 );
+export default Payments;

@@ -6,6 +6,7 @@ import { db } from '../../config/dbconfig';
 
 export async function createModelsMySQL (dbname: any, res: any) {
   try {
+    let indexFile = '';
     const tableNames = await db.sequelize.query(`SHOW TABLES FROM ${dbname} `, {
       type: Sequelize.QueryTypes.SHOWTABLES
     });
@@ -16,10 +17,14 @@ export async function createModelsMySQL (dbname: any, res: any) {
       );
 
       const upper = tableName.charAt(0).toUpperCase() + tableName.slice(1);
-      const MODEL_START = `import Sequelize from "sequelize";
-import { db } from '../config/dbconfig';
-
-export const ${upper} = db.sequelize.define("${tableName}", {`;
+      indexFile +=
+        'export { default as ' + upper + ' } from \'./' + tableName + '\';\n';
+      const MODEL_START = `
+      import Sequelize from 'sequelize';
+      import { db } from '../config/dbconfig';
+      
+      const ${upper} = db.sequelize.define('${tableName}', {
+      `;
 
       let modelCode = MODEL_START;
 
@@ -35,13 +40,15 @@ export const ${upper} = db.sequelize.define("${tableName}", {`;
         const { Field: columnName, Type: dataType, Key, Extra } = column;
         const isPrimaryKey = Key === 'PRI';
         const autoIncrement = Extra === 'auto_increment' && isPrimaryKey;
-        const type = DATA_TYPE_MAP[dataType.split('(')[0]] || 'STRING';
+        const type = DATA_TYPE_MAP[dataType.split('(')[0]] ?? 'STRING';
+
+        const properties = [`type: Sequelize.${type},allowNull: false`];
+
+        if (isPrimaryKey) properties.push('primaryKey: true');
+        if (autoIncrement) properties.push('autoIncrement: true');
 
         modelCode += `  ${columnName}: {
-          type: Sequelize.${type},
-          ${isPrimaryKey ? 'primaryKey: true,' : ''}
-          ${autoIncrement ? 'autoIncrement: true,' : ''}
-          allowNull: false,
+        ${properties.join(',\n  ')}
       },
       `;
       }
@@ -49,7 +56,8 @@ export const ${upper} = db.sequelize.define("${tableName}", {`;
       modelCode += ` },
       {
         timestamps: false,
-     }); `;
+     } 
+     );export default ${upper}; `;
 
       const filePath = path
         .resolve(__dirname, '../../src/models', `${tableName}.ts`)
@@ -64,6 +72,10 @@ export const ${upper} = db.sequelize.define("${tableName}", {`;
       } catch (err) {
         console.error(`Error writing file for table: ${tableName}`, err);
       }
+      const indexPath = path
+        .resolve(__dirname, '../../src/models', 'index.ts')
+        .replace('/dist', '');
+      fs.writeFileSync(indexPath, indexFile);
 
       console.log(`Created Sequelize model for table: ${tableName}`);
     }
