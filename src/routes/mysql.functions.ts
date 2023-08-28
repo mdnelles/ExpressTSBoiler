@@ -1,4 +1,32 @@
 /*
+SQL Normalization
+
+1NF
+Each record in a table must be uniquely identifiable
+Each cell / column should contain a single value
+
+2NF
+Be in 1NF
+No partial dependencies
+AKA Single Column Primary Key that does not functionally dependant on any subset of candidate key relation
+
+3NF
+Be in 2NF
+No transient dependencies
+Should be no non-key attributes (attributes that are not part of the primary key) depending on other non-key attributes
+
+BCNF (Boyce-Codd Normal Form)
+Even when a database is in 3rd Normal Form, still there would be anomalies resulting if it has more than one Candidate Key.
+
+4NF (Fourth Normal Form) Rules
+If no database table instance contains two or more, independent and multivalued data describing the relevant entity, then it is in 4th Normal Form.
+
+5NF (Fifth Normal Form) Rules
+A table is in 5th Normal Form only if it is in 4NF and it cannot be decomposed into any number of smaller tables without loss of data.
+
+6NF (Sixth Normal Form) Proposed
+6th Normal Form is not standardized, yet however, it is being discussed by database experts for some time. Hopefully, we would have a clear & standardized definition for 6th Normal Form in the near future…
+
 SELECT AVG(creditLimit) AS avgCreditLimit FROM customers;
 SELECT SUM(amount) AS totalPayments FROM payments;
 SELECT COUNT(*) AS shippedOrdersCount FROM orders WHERE status = 'Shipped';
@@ -7,6 +35,12 @@ SELECT MAX(orderDate) AS latestOrderDate FROM orders;
 SELECT customerNumber, COUNT(orderNumber) AS numberOfOrders
 FROM orders
 GROUP BY customerNumber;
+
+// SELF JOIN EXAMPLE
+SELECT A.lastName, A.firstName, A.reportsTo,B.firstName,
+B.lastName FROM employees A
+JOIN employees B
+ON A.reportsTo = B.employeeNumber;
 
 //INNER JOIN
 SELECT orders.orderNumber, customers.customerName
