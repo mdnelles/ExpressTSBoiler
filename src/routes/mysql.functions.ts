@@ -36,6 +36,18 @@ SELECT customerNumber, COUNT(orderNumber) AS numberOfOrders
 FROM orders
 GROUP BY customerNumber;
 
+ALTER TABLE `example`.`likes`
+ADD COLUMN `icon` VARCHAR(45) NULL AFTER `memberId`;
+
+CREATE TABLE amigos (
+    friendId1 INT NOT NULL,
+    friendId2 INT NOT NULL,
+    friendsDate TIMESTAMP default CURRENT_TIMESTAMP,
+    PRIMARY KEY (friendId1, friendId2),
+    FOREIGN KEY (friendId1) REFERENCES members(id),
+    FOREIGN KEY (friendId2) REFERENCES members(id)
+);
+
 // SELF JOIN EXAMPLE
 SELECT A.lastName, A.firstName, A.reportsTo,B.firstName,
 B.lastName FROM employees A
